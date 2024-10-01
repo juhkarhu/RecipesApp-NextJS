@@ -1,4 +1,4 @@
-// module.exports = {
-//   basePath: '/RecipesApp-NextJS',
-//   assetPrefix: '/RecipesApp-NextJS/',
-// }
+module.exports = {
+  basePath: '/RecipesApp-NextJS',
+  assetPrefix: '/RecipesApp-NextJS/',
+}
