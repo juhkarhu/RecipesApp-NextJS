@@ -1,7 +1,6 @@
 import mongoose from 'mongoose';
 
-const MONGODB_URI = process.env.MONGODB_URI!; // Make sure your .env file has MONGODB_URI
-console.log(`MONGODB_URI: ${MONGODB_URI}`);
+const MONGODB_URI = process.env.MONGODB_URI!; // Ensure this is defined in your .env file
 
 if (!MONGODB_URI) {
   throw new Error(
@@ -9,11 +8,11 @@ if (!MONGODB_URI) {
   );
 }
 
-let cached = global.mongoose;
-
-if (!cached) {
-  cached = global.mongoose = { conn: null, promise: null };
-}
+// Use a module-level cache instead of a global one
+const cached = {
+  conn: null as mongoose.Mongoose | null,
+  promise: null as Promise<mongoose.Mongoose> | null,
+};
 
 async function connectToDatabase() {
   if (cached.conn) {
