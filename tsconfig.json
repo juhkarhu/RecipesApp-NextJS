@@ -23,5 +23,6 @@
     "baseUrl": "src"
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "src/app/pages/_app.js"],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules"],
+  "target": "es2017",
 }

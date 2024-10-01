@@ -62,3 +62,29 @@ export const deleteRecipeById = async (id: string) => {
     throw error;
   }
 };
+
+// Function to send a new recipe to the backend
+export const fetchCategoriesAndTags = async () => {
+  try {
+    console.log(`fetchCategoriesAndTagsfetchCategoriesAndTagsfetchCategoriesAndTagsfetchCategoriesAndTags`)
+    const response = await fetch('/api/utils/categoriesAndTags', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      console.log(`not ok`)
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'fetchCategoriesAndTags failed');
+    }
+
+    console.log(`ok`)
+    return await response;
+  } catch (error) {
+    console.log(`error`)
+    console.error('Error in fetchCategoriesAndTags:', error);
+    throw error;
+  }
+};

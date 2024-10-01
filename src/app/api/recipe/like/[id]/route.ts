@@ -18,9 +18,8 @@ export async function PUT(
 
     const update = { rating: Number(newRating) };
 
-    const updatedRecipe = await Recipe.findByIdAndUpdate(new ObjectId(id), { $set: update }, { new: true });    console.log(`newRating: ${newRating}`)
-    console.log(`id: ${id}`)
-    return NextResponse.json(updatedRecipe, { status: 200 });
+    await Recipe.findByIdAndUpdate(new ObjectId(id), { $set: update }, { new: true });    console.log(`newRating: ${newRating}`)
+    return NextResponse.json({ status: 200 });
   } catch (error) {
     console.error('Error adding recipe:', error);
     return NextResponse.json(

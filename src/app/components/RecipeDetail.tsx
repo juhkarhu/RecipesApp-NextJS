@@ -1,49 +1,58 @@
-"use client"
+'use client'
 
 import { useEffect, useState } from 'react';
 import { type Recipe } from '../../types/propTypes';
 import { sendLikeToBackend } from 'app/services/recipesAPI';
 
 interface RecipeDetailProps {
-  recipeId: string;
+  recipeId?: string;
+  recipe?: Recipe;
+  onUpdateRecipe?: (updatedRecipe: Recipe) => void;
 }
 
-const RecipeDetail: React.FC<RecipeDetailProps> = ({ recipeId }) => {
-  const [recipe, setRecipe] = useState<Recipe>();
+const RecipeDetail: React.FC<RecipeDetailProps> = ({ recipeId, recipe: initialRecipe, onUpdateRecipe }) => {
+  const [recipe, setRecipe] = useState<Recipe | null>(initialRecipe || null);
 
   useEffect(() => {
     const fetchRecipe = async () => {
-      try {
-        const response = await fetch(`/api/recipe${recipeId ? `?id=${recipeId}` : ''}`);
-        if (!response.ok) throw new Error('Recipe not found');
-        
-        const data = await response.json();
-        
-        if (data.length > 0) {
-          setRecipe(data[0]);
-        } else {
-          console.warn('No recipe found with the given ID');
+      if (recipeId && !initialRecipe) {
+        try {
+          const response = await fetch(`/api/recipe?id=${recipeId}`);
+          if (!response.ok) throw new Error('Recipe not found');
+          
+          const data = await response.json();
+          if (data.length > 0) {
+            setRecipe(data[0]);
+          }
+        } catch (error) {
+          console.error('Error fetching the recipe:', error);
         }
-      } catch (error) {
-        console.error('Error fetching the recipe:', error);
       }
     };
+
     fetchRecipe();
-  }, [recipeId]);
+  }, [recipeId, initialRecipe]);
 
   if (!recipe) return <p className='text-white'>Loading...</p>;
 
-  const handleLikedRecipe =  async (id: string, liked: boolean) => {
-    console.log(`Did you like the recipe? Answer: ${liked}`)
+  const handleLikedRecipe = async (liked: boolean) => {
     const newRating: number = liked ? Math.min(recipe.rating + 0.1, 5.0) : Math.max(recipe.rating - 0.1, 0.0);
     try {
-      await sendLikeToBackend(id, Number(newRating.toFixed(1)));
-    } catch (error) {
-      console.error('Error creating recipe:', error);
-    }
-  }
+      await sendLikeToBackend(recipe.id, Number(newRating.toFixed(1)));
 
-  const { id = '', name = '', rating = '', tags = [], categories = [], ingredients = [], instructions = [] } = recipe;
+      const updatedRecipe = { ...recipe, rating: Number(newRating.toFixed(1)) };
+      setRecipe(updatedRecipe);
+
+      // Call the parent component's update function if provided
+      if (onUpdateRecipe) {
+        onUpdateRecipe(updatedRecipe);
+      }
+    } catch (error) {
+      console.error('Error updating recipe rating:', error);
+    }
+  };
+
+  const { name, rating, tags = [], categories = [], ingredients = [], instructions = [] } = recipe;
 
   return (
     <div className='p-6 bg-gray-900 text-white rounded-lg shadow-md'>
@@ -51,7 +60,7 @@ const RecipeDetail: React.FC<RecipeDetailProps> = ({ recipeId }) => {
       <h2 className='text-l font-bold mb-4'>Rating: {rating}</h2>
       <button
             onClick={async () => {
-              await handleLikedRecipe(id, true);
+              await handleLikedRecipe(true);
             }}
             className='bg-red-600 text-white px-2 py-1 rounded mt-2'
           >
@@ -60,7 +69,7 @@ const RecipeDetail: React.FC<RecipeDetailProps> = ({ recipeId }) => {
       
       <button
             onClick={async () => {
-              await handleLikedRecipe(id, false);
+              await handleLikedRecipe(false);
             }}
             className='bg-red-600 text-white px-2 py-1 rounded mt-2'
           >

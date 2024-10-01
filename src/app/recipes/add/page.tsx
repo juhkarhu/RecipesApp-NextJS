@@ -5,6 +5,9 @@ import { v4 as uuidv4 } from 'uuid';
 import { sendRecipeToBackend } from '../../services/recipesAPI';
 import Autocomplete from 'react-autocomplete-input';
 import { Recipe, Ingredient } from 'types/propTypes';
+import { useRouter } from 'next/navigation';
+import { fetchCategoriesAndTags } from '../../services/recipesAPI';
+
 
 const RecipeAdd: React.FC = () => {
   const predefinedUnits = ['g', 'kg', 'ml', 'l', 'tl', 'rl', 'dl', 'kpl'];
@@ -36,9 +39,17 @@ const RecipeAdd: React.FC = () => {
     ingredients: [],
   });
 
+  const router = useRouter();
+
   useEffect(() => {
-    setCategories(['Kana', 'Jauheliha', 'Soijarouhe', 'Tofu']);
-    setTags(['Mallan suosikki', 'Uuni', 'Paistinpannu']);
+    const updateCategoriesAndTags = async () => {
+      const response = await fetchCategoriesAndTags();
+      const { tags, categories} = await response.json();
+
+      setCategories(categories);
+      setTags(tags);
+    };
+    updateCategoriesAndTags();
   }, []);
 
   const handleRemoveIngredient = (index: number) => {
@@ -92,8 +103,10 @@ const RecipeAdd: React.FC = () => {
 
     try {
       await sendRecipeToBackend(recipeData);
+      router.push(`/recipes/${recipeData.id}`);
     } catch (error) {
       console.error('Error creating recipe:', error);
+      alert('There was an error adding your recipe. Please try again.');
     }
   };
 
